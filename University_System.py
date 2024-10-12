@@ -5,7 +5,6 @@ class University:
     def __init__(self, name):
         self.name = name
         self.departments = self.load_departments()
-
     def add_department(self, department):
         if department not in self.departments:
             self.departments.append(department)
@@ -65,15 +64,24 @@ class Person:
 
 class Teacher(Person):
     def __init__(self, name, age, contact, role):
-        super().__init__(name, age, contact, role)
         self.departments = self.load_departments()
+        super().__init__(name, age, contact, role)
         self.file_name = f"{self.name.replace(' ', '_')}_teacher.json"  # Unique filename
 
     def set_departments_teacher(self, department):
-        self.departments.append(department)
-        self.save_departments()  # Save the updated list to the file
-        self.save_teacher_info()  # Save teacher info
-        print(f"Department '{department['department']}' added successfully.")
+        """Add a department if it doesn't already exist."""
+        existing_department = next(
+            (d for d in self.departments if d["department"] == department["department"]),
+            None,
+        )
+
+        if existing_department:
+            print(f"Department '{department['department']}' already exists.")
+        else:
+            self.departments.append(department)
+            self.save_departments()  # Save the updated list
+            self.save_teacher_info()  # Save teacher info
+            print(f"Department '{department['department']}' added successfully.")
 
     def get_departments_teacher(self):
         return self.departments
@@ -107,10 +115,9 @@ class Teacher(Person):
     def get_particular_departments(self, department_name):
         for department in self.departments:
             if department.get("department").lower() == department_name.lower():
-                courses = department.get("courses")
-                return courses if isinstance(courses, list) else [courses]
-        return f"No courses found for the department '{department_name}'."
-
+                courses = department.get("courses", [])
+                return courses if courses else "No courses found for this department."
+        return f"Department '{department_name}' not found."               
     def update_department_courses(self, department_name, new_course):
         for department in self.departments:
             if department.get("department").lower() == department_name.lower():
@@ -166,9 +173,14 @@ class Student(Person):
         self.load_student_info()  # Load student info from file if it exists
 
     def set_courses(self, course):
-        """Add a course and save the updated information."""
-        self.courses.append(course)
-        self.save_student_info()  # Save student info
+        existing_course = next((c for c in self.courses if c["course"] == course["course"]), None)
+
+        if existing_course:
+            print(f"Course '{course['course']}' already exists.")
+        else:
+            self.courses.append(course)
+            self.save_student_info()  # Save student info after adding the course
+            print(f"Course '{course['course']}' added successfully.")
 
     def update_course(self, old_course, new_course):
         """Update a course name and save the updated information."""
@@ -192,12 +204,13 @@ class Student(Person):
 
     def remove_course(self, course):
         """Remove a course and save the updated information."""
-        if course in self.courses:
-            self.courses.remove(course)
-            self.save_student_info()  # Save student info
-            print(f"Course '{course}' removed from the course list.")
-        else:
-            print(f"Course '{course}' not found in courses.")
+        for cour in self.courses:
+            if cour.get("course") == course:
+                self.courses.remove(cour)
+                self.save_student_info()  # Save student info
+                print(f"Course '{course}' removed from the course list.")
+                return
+        print(f"Department '{course}' not found.")
 
     def clear_courses(self):
         """Clear all courses and save the updated information."""
@@ -241,3 +254,36 @@ class Student(Person):
         except json.JSONDecodeError:
             print(f"Error decoding JSON from '{self.file_name}'. Starting fresh.")
 
+if __name__ == "__main__":
+    # Uni = University("University of Sahiwal")
+    # uni_departments = ["Psychology", "English", "Mathematics", "Chemistry", "Physics", "Computer Science", "Software Engineering", "Urdu", "BBA"]
+    # for dprt in uni_departments:
+    #     Uni.add_department(dprt)
+
+    # print(Uni.get_departments())
+
+    # teacher = Teacher("Dr. Shafiq Hussain", 40, 673287239832, "HOD of CS Department")
+    # teacher_departments = [{"department": "Computer Science", "courses": ["Programming Fundamentals"], "credit_hours": 4},
+    #                        {"department": "Software Engineering", "courses": ["Programming Fundamentals"], "credit_hours": 4}]
+    # for department in teacher_departments:
+    #     teacher.set_departments_teacher(department)
+
+    # print(teacher.get_departments_teacher())
+    # teacher.update_department_courses("Software Engineering", "OOP")
+    # print(teacher.get_particular_departments("Software Engineering"))
+
+    # student1 = Student("Abdul Rehman", 20, 69242983, "Student", "Psychology", "3rd")
+    # st1_courses = [
+    #     {"course": "Psychology 101", "Instructor": "Dr. Rehman", "credit_hours": 3},
+    #     {"course": "Psychology 201", "Instructor": "Dr. Hussain", "credit_hours": 3},
+    #     {"course": "Psychology 301", "Instructor": "Dr. Qadir", "credit_hours": 3},
+    # ]
+    # for course in st1_courses:
+    #     student1.set_courses(course)
+
+    # print(student1.get_courses())
+    # student1.update_course("Psychology 101", "Psychology 101: Introduction to Psychology")
+    # student1.update_instructor(" Psychology 101: Introduction to Psychology", "Dr. Shafiq Hussain")
+    # student1.remove_course("Psychology 201")
+    # print(student1.get_courses())
+    # student1.clear_courses()
