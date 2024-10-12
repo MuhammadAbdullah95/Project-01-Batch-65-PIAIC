@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Environment Variables
+.env
+
+# Logs
+*.log
+
+# Mac OS files
+.DS_Store
+
+# Virtual environment
+venv/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Personal configuration files
+*.config
